@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="ru" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NFT Username & Gift Rent | Telegram Premium</title>
+    <meta name="description" content="Аренда редких юзернеймов и NFT-подарков Telegram.">
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        dark: '#0a0a0a',
+                        neon: { cyan: '#00f5ff', purple: '#a855f7' }
+                    },
+                    animation: {
+                        'float': 'float 6s ease-in-out infinite',
+                        'pulse-glow': 'pulseGlow 2s ease-in-out infinite',
+                    },
+                    keyframes: {
+                        float: { '0%, 100%': { transform: 'translateY(0px)' }, '50%': { transform: 'translateY(-20px)' } },
+                        pulseGlow: { '0%, 100%': { boxShadow: '0 0 20px rgba(0, 245, 255, 0.3)' }, '50%': { boxShadow: '0 0 40px rgba(0, 245, 255, 0.6)' } }
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.13.3/dist/cdn.min.js"></script>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <style>
+        * { font-family: 'Inter', sans-serif; }
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #0a0a0a; }
+        ::-webkit-scrollbar-thumb { background: linear-gradient(180deg, #00f5ff, #a855f7); border-radius: 4px; }
+        
+        .neon-cyan { text-shadow: 0 0 10px rgba(0, 245, 255, 0.5); }
+        .card-glow:hover { box-shadow: 0 0 30px rgba(0, 245, 255, 0.2), 0 0 60px rgba(168, 85, 247, 0.1); }
+        
+        .gradient-border {
+            position: relative; background: #0a0a0a; border-radius: 16px; overflow: hidden;
+        }
+        .gradient-border::before {
+            content: ''; position: absolute; inset: -2px; border-radius: 18px;
+            background: linear-gradient(135deg, #00f5ff, #a855f7, #00f5ff);
+            z-index: -1; opacity: 0.5;
+        }
+        
+        .item-media-container {
+            width: 100%; aspect-ratio: 1/1; border-radius: 12px; margin-bottom: 1rem;
+            position: relative; overflow: hidden; border: 1px solid rgba(255,255,255,0.1);
+            background-color: #111;
+        }
+
+        .item-bg-image {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            object-fit: cover; z-index: 0; transition: transform 0.5s ease;
+        }
+        
+        .group:hover .item-bg-image { transform: scale(1.05); }
+
+        .item-lottie-player {
+            position: relative; z-index: 1; width: 100%; height: 100%;
+            pointer-events: none; object-fit: contain;
+            filter: drop-shadow(0 10px 20px rgba(255,255,255,0.4));
+        }
+        
+        .smooth-transition { transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+        .modal-backdrop { backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); }
+    </style>
+</head>
+
+<body 
+    x-data="appData()"
+    x-init="initApp()"
+    class="bg-dark text-white min-h-screen overflow-x-hidden"
+    :class="{ 'dark': isDark, 'light': !isDark }"
+>
+
+    <!-- HEADER -->
+    <header class="fixed top-0 left-0 right-0 z-50 bg-dark/80 backdrop-blur-xl border-b border-white/10">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16 sm:h-20">
+                <div class="flex items-center space-x-3">
+                    <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-neon-cyan to-neon-purple flex items-center justify-center animate-pulse-glow overflow-hidden">
+                        <img src="assets/plane-icon.svg" class="w-full h-full" alt="Telegram">
+                    </div>
+                    <span class="text-xl font-bold bg-gradient-to-r from-neon-cyan to-neon-purple bg-clip-text text-transparent">NFT Rent</span>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <button @click="toggleTheme()" class="p-2 rounded-lg bg-white/10 hover:bg-white/20 smooth-transition">
+                        <svg x-show="isDark" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
+                        <svg x-show="!isDark" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/></svg>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- HERO -->
+    <section class="relative min-h-screen flex items-center justify-center overflow-hidden pt-20">
+        <div class="absolute inset-0 z-0">
+            <div class="absolute top-1/4 left-1/4 w-96 h-96 bg-neon-cyan/20 rounded-full blur-3xl animate-float"></div>
+            <div class="absolute bottom-1/4 right-1/4 w-96 h-96 bg-neon-purple/20 rounded-full blur-3xl animate-float" style="animation-delay: 2s;"></div>
+        </div>
+        
+        <div class="relative z-10 max-w-7xl mx-auto px-4 text-center">
+            <div class="mb-8 animate-float">
+                <div class="w-24 h-24 sm:w-32 sm:h-32 mx-auto rounded-2xl bg-gradient-to-br from-neon-cyan to-neon-purple flex items-center justify-center card-glow smooth-transition overflow-hidden">
+                    <img src="assets/plane-icon.svg" class="w-20 h-20 sm:w-28 sm:h-28" alt="Telegram">
+                </div>
+            </div>
+            
+            <h1 class="text-4xl sm:text-6xl font-extrabold mb-6 leading-tight">
+                <span class="bg-gradient-to-r from-white via-gray-200 to-white bg-clip-text text-transparent">Аренда редких</span><br>
+                <span class="bg-gradient-to-r from-neon-cyan via-neon-purple to-neon-cyan bg-clip-text text-transparent neon-cyan">NFT & Юзернеймов</span>
+            </h1>
+            
+            <p class="text-xl text-gray-400 mb-10">
+                <span class="text-neon-cyan">Коротко.</span> <span class="text-neon-purple">Выгодно.</span> <span class="text-white">Только крипта.</span>
+            </p>
+            
+            <a href="#catalog" class="px-8 py-4 bg-gradient-to-r from-neon-cyan to-neon-purple rounded-xl font-semibold text-lg smooth-transition hover:scale-105 hover:shadow-lg hover:shadow-neon-cyan/30 inline-block">
+                Смотреть каталог
+            </a>
+        </div>
+    </section>
+
+    <!-- CATALOG -->
+    <section id="catalog" class="py-20">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-12">
+                <h2 class="text-3xl sm:text-4xl font-bold mb-4">
+                    <span class="bg-gradient-to-r from-neon-cyan to-neon-purple bg-clip-text text-transparent">📋 Доступные лоты</span>
+                </h2>
+                <div class="flex flex-wrap justify-center gap-2 mt-6">
+                    <button @click="filterType = 'all'" :class="{ 'bg-neon-cyan text-dark': filterType === 'all', 'bg-white/10 text-gray-300': filterType !== 'all' }" class="px-4 py-2 rounded-lg text-sm font-medium smooth-transition">Все</button>
+                    <button @click="filterType = 'username'" :class="{ 'bg-neon-cyan text-dark': filterType === 'username', 'bg-white/10 text-gray-300': filterType !== 'username' }" class="px-4 py-2 rounded-lg text-sm font-medium smooth-transition">Юзернеймы</button>
+                    <button @click="filterType = 'nft'" :class="{ 'bg-neon-cyan text-dark': filterType === 'nft', 'bg-white/10 text-gray-300': filterType !== 'nft' }" class="px-4 py-2 rounded-lg text-sm font-medium smooth-transition">NFT Подарки</button>
+                </div>
+            </div>
+            
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                <template x-for="item in filteredItems" :key="item.id">
+                    <div class="gradient-border p-6 card-glow smooth-transition hover:scale-[1.02] group flex flex-col">
+                        <div class="mb-4">
+                            <template x-if="item.type === 'nft'">
+                                <div class="item-media-container">
+                                    <img :src="item.background" :alt="item.name" class="item-bg-image">
+                                    <img :src="item.animation" class="item-lottie-player" style="object-fit: contain; filter: drop-shadow(0 10px 20px rgba(255,255,255,0.4));">
+                                </div>
+                            </template>
+                            <template x-if="item.type === 'username'">
+                                <div class="w-full aspect-video bg-gradient-to-br from-white/5 to-white/0 rounded-xl flex items-center justify-center border border-white/10 mb-4">
+                                    <span class="text-3xl font-bold text-neon-cyan tracking-tighter" x-text="item.name"></span>
+                                </div>
+                            </template>
+                        </div>
+
+                        <div class="flex-1 flex flex-col">
+                            <div class="flex items-center justify-between mb-2">
+                                <span class="text-xl font-bold text-white" x-text="item.name"></span>
+                                <span class="px-2 py-1 text-xs rounded-full uppercase font-bold"
+                                      :class="item.type === 'nft' ? 'bg-neon-purple/20 text-neon-purple' : 'bg-neon-cyan/20 text-neon-cyan'"
+                                      x-text="item.type === 'nft' ? 'NFT Gift' : 'Username'"></span>
+                            </div>
+                            
+                            <p class="text-gray-400 text-sm mb-4 line-clamp-2" x-text="item.description"></p>
+                            
+                            <div class="space-y-2 mb-6 mt-auto">
+                                <div class="flex justify-between text-sm"><span class="text-gray-500">1 день</span><span class="font-semibold">$<span x-text="item.price1d"></span></span></div>
+                                <div class="flex justify-between text-sm"><span class="text-gray-500">7 дней</span><span class="font-semibold text-neon-cyan">$<span x-text="item.price7d"></span></span></div>
+                                <div class="flex justify-between text-sm"><span class="text-gray-500">30 дней</span><span class="font-semibold text-neon-purple">$<span x-text="item.price30d"></span></span></div>
+                            </div>
+                            
+                            <button @click="openModal(item)" class="w-full py-3 bg-gradient-to-r from-neon-cyan to-neon-purple rounded-xl font-semibold smooth-transition hover:opacity-80">
+                                Арендовать
+                            </button>
+                        </div>
+                    </div>
+                </template>
+            </div>
+        </div>
+    </section>
+
+    <!-- FOOTER -->
+    <footer class="py-16 bg-dark/80 border-t border-white/10">
+        <div class="max-w-7xl mx-auto px-4 text-center">
+            <h3 class="text-xl font-bold mb-6">💳 Кошельки для оплаты</h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 max-w-2xl mx-auto mb-8">
+                <template x-for="wallet in wallets" :key="wallet.name">
+                    <div class="p-4 bg-white/5 rounded-xl border border-white/10 flex justify-between items-center">
+                        <div class="text-left">
+                            <p class="font-semibold text-sm" x-text="wallet.name"></p>
+                            <p class="text-gray-400 text-xs font-mono truncate max-w-[200px]" x-text="wallet.address"></p>
+                        </div>
+                        <button @click="copyToClipboard(wallet.address)" class="p-2 bg-white/10 rounded-lg hover:bg-neon-cyan/20 smooth-transition">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
+                        </button>
+                    </div>
+                </template>
+            </div>
+            <a :href="telegramLink" class="inline-flex items-center space-x-2 px-6 py-3 bg-gradient-to-r from-neon-cyan to-neon-purple rounded-xl font-semibold smooth-transition hover:opacity-80">
+                <img src="assets/plane-icon.svg" class="w-6 h-6" alt="Telegram">
+                <span>Написать в директ</span>
+            </a>
+            <p class="mt-8 text-gray-600 text-sm">© 2026 NFT Rent. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <!-- MODAL -->
+    <div x-show="modalOpen" x-transition class="fixed inset-0 z-[100] flex items-center justify-center p-4 modal-backdrop bg-black/80" @click.self="closeModal()">
+        <div class="w-full max-w-lg bg-dark border border-white/10 rounded-2xl p-6 sm:p-8 smooth-transition">
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="text-2xl font-bold text-neon-cyan" x-text="selectedItem?.name"></h3>
+                <button @click="closeModal()" class="p-2 hover:bg-white/10 rounded-lg">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                </button>
+            </div>
+            
+            <div class="mb-6">
+                <label class="block text-sm font-semibold mb-3">Срок аренды:</label>
+                <div class="grid grid-cols-2 gap-3">
+                    <template x-for="period in rentalPeriods" :key="period.days">
+                        <label class="cursor-pointer">
+                            <input 
+                                type="radio" 
+                                name="period" 
+                                :value="period.days" 
+                                x-model.number="selectedPeriod"
+                                @change="selectedPeriod = Number($event.target.value)"
+                                class="sr-only"
+                            >
+                            <div class="p-3 border-2 rounded-xl smooth-transition text-center"
+                                 :class="selectedPeriod === period.days ? 'border-neon-cyan bg-neon-cyan/10' : 'border-white/10 hover:border-white/30'">
+                                <span class="block font-bold" x-text="period.label"></span>
+                                <span class="text-xs text-gray-400">$<span x-text="getPriceForPeriod(period.days)"></span></span>
+                            </div>
+                        </label>
+                    </template>
+                </div>
+            </div>
+            
+            <div class="p-4 bg-gradient-to-r from-neon-cyan/10 to-neon-purple/10 border border-neon-cyan/30 rounded-xl mb-6 flex justify-between items-center">
+                <span class="text-gray-400">Итого:</span>
+                <span class="text-2xl font-bold text-neon-cyan">
+                    $<span x-text="getPriceForPeriod(selectedPeriod)"></span>
+                </span>
+            </div>
+            
+            <a :href="telegramMessageLink" target="_blank" class="w-full py-4 bg-gradient-to-r from-neon-cyan to-neon-purple rounded-xl font-semibold text-lg smooth-transition hover:opacity-80 flex items-center justify-center space-x-2">
+                <img src="assets/plane-icon.svg" class="w-6 h-6" alt="Telegram">
+                <span>Написать в Telegram</span>
+            </a>
+        </div>
+    </div>
+
+    <!-- TOAST -->
+    <div x-show="toast.visible" x-transition class="fixed bottom-6 right-6 z-[150] px-6 py-4 bg-gradient-to-r from-neon-cyan to-neon-purple rounded-xl shadow-lg smooth-transition">
+        <span class="font-semibold" x-text="toast.message"></span>
+    </div>
+
+    <!-- LOGIC -->
+    <script>
+        function appData() {
+            return {
+                isDark: true,
+                modalOpen: false,
+                selectedItem: null,
+                selectedPeriod: 1,          // число, а не строка
+                filterType: 'all',
+                toast: { visible: false, message: '' },
+                
+                telegramLink: 'https://t.me/rentserv?direct',
+                
+                rentalPeriods: [
+                    { days: 1,  label: '1 день'  },
+                    { days: 7,  label: '7 дней'  },
+                    { days: 30, label: '30 дней' },
+                    { days: 90, label: '90 дней' }
+                ],
+                
+                wallets: [
+                    { name: 'USDT (TRC20)', address: 'TMESeMi1FCkfb2uQ1oVhYSuTjTo4jNYkKh' },
+                    { name: 'TON', address: 'UQD4IQGnLKgkzNZ2oZ6fgtXnEWdcWaIkJQKm4znKT2rEeaGp' }
+                ],
+                
+                items: [
+                    // USERNAME
+                    { id: 1, type: 'username', name: '@ipege', description: 'Ультра-короткий, 5 символов.', price1d: 0.5, price7d: 2, price30d: 3, price90d: 5 },
+                    { id: 2, type: 'username', name: '@sectxs', description: 'Стильный, молодежный.', price1d: 0.5, price7d: 2, price30d: 3, price90d: 5 },
+                    { id: 3, type: 'username', name: '@harmear', description: 'Звучное название.', price1d: 0.5, price7d: 2, price30d: 3, price90d: 5 },
+                    { id: 4, type: 'username', name: '@tsiaton', description: 'Уникальное сочетание.', price1d: 0.5, price7d: 2, price30d: 3, price90d: 5 },
+                    { id: 5, type: 'username', name: '@costfit', description: 'Для фитнес или финтех.', price1d: 0.5, price7d: 2, price30d: 3, price90d: 5 },
+                    { id: 6, type: 'username', name: '@fudwab', description: 'Крипто-тематика.', price1d: 0.5, price7d: 2, price30d: 3, price90d: 5 },
+                    { id: 7, type: 'username', name: '@newsdread', description: 'Для новостного канала.', price1d: 0.5, price7d: 2, price30d: 3, price90d: 5 },
+                    { id: 8, type: 'username', name: '@richstonks', description: 'Для инвесторов.', price1d: 0.5, price7d: 2, price30d: 3, price90d: 5 },
+                    { id: 9, type: 'username', name: '@kissyouangel', description: 'Романтичное имя.', price1d: 0.5, price7d: 2, price30d: 3, price90d: 5 },
+                    { id: 10, type: 'username', name: '@tracelipstick', description: 'Бьюти тематика.', price1d: 0.5, price7d: 2, price30d: 3, price90d: 5 },
+
+                    // NFT
+                    { id: 101, type: 'nft', name: 'Mousse Cake', description: 'Редкий NFT подарок.', animation: 'assets/mousse-cake.svg', background: 'assets/bg/cake-bg.jpg', price1d: 0.5, price7d: 2, price30d: 3, price90d: 5 },
+                    { id: 102, type: 'nft', name: 'Diamond Ring #27724', description: 'Блестящее кольцо (Красное).', animation: 'assets/diamond-ring-1.svg', background: 'assets/bg/ring-red-bg.jpg', price1d: 0.5, price7d: 2, price30d: 3, price90d: 5 },
+                    { id: 103, type: 'nft', name: 'Diamond Ring #11152', description: 'Блестящее кольцо (Синее).', animation: 'assets/diamond-ring-2.svg', background: 'assets/bg/ring-blue-bg.jpg', price1d: 0.5, price7d: 2, price30d: 3, price90d: 5 }
+                ],
+
+                get filteredItems() {
+                    if (this.filterType === 'all') return this.items;
+                    return this.items.filter(i => i.type === this.filterType);
+                },
+
+                get telegramMessageLink() {
+                    if (!this.selectedItem) return this.telegramLink;
+                    const msg = `Привет! Хочу арендовать ${this.selectedItem.name} на ${this.selectedPeriod} дн. Цена: $${this.getPriceForPeriod(this.selectedPeriod)}`;
+                    return `${this.telegramLink}?text=${encodeURIComponent(msg)}`;
+                },
+
+                initApp() {
+                    const saved = localStorage.getItem('theme');
+                    if (saved) this.isDark = saved === 'dark';
+                },
+
+                toggleTheme() {
+                    this.isDark = !this.isDark;
+                    localStorage.setItem('theme', this.isDark ? 'dark' : 'light');
+                },
+
+                openModal(item) {
+                    this.selectedItem = item;
+                    this.selectedPeriod = 1;
+                    this.modalOpen = true;
+                    document.body.style.overflow = 'hidden';
+                },
+
+                closeModal() {
+                    this.modalOpen = false;
+                    this.selectedItem = null;
+                    document.body.style.overflow = '';
+                },
+
+                getPriceForPeriod(days) {
+                    if (!this.selectedItem) return 0;
+                    switch (Number(days)) {
+                        case 1:  return this.selectedItem.price1d;
+                        case 7:  return this.selectedItem.price7d;
+                        case 30: return this.selectedItem.price30d;
+                        case 90: return this.selectedItem.price90d;
+                        default: return this.selectedItem.price1d;
+                    }
+                },
+
+                copyToClipboard(text) {
+                    navigator.clipboard.writeText(text).then(() => {
+                        this.toast.message = 'Адрес скопирован!';
+                        this.toast.visible = true;
+                        setTimeout(() => this.toast.visible = false, 2000);
+                    });
+                }
+            }
+        }
+    </script>
+</body>
+</html>
